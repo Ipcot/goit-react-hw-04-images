@@ -5,7 +5,7 @@ import axios from 'axios';
 //   page = 1;
 
 //   state = {
-//     photos: null,
+//     payload: null,
 //   };
 //   async fetchPayload() {
 //     const API_KEY = '27561705-01d67e91a566568adc5cfd7f5';
@@ -40,16 +40,16 @@ import axios from 'axios';
 
 //     if (prevProps.query !== this.props.query) {
 //       const response = axios(`${BASE_URL}?${searchParams}`);
-//       response.then(data => this.setState({ photos: data.data.hits }));
+//       response.then(data => this.setState({ payload: data.data.hits }));
 //     }
 //   };
 
 //   render() {
 //     return (
 //       <>
-//         {this.state.photos && (
+//         {this.state.payload && (
 //           <ul>
-//             {this.state.photos.map(item => {
+//             {this.state.payload.map(item => {
 //               return (
 //                 <li key={item.id}>
 //                   <img src={item.webformatURL} alt="collection" />{' '}
@@ -78,9 +78,10 @@ export const fetchQuery = async (query, page) => {
     per_page: 12,
   });
 
-  const response = await axios(`${BASE_URL}?${searchParams}`).then(
-    data => data.data.hits
-  );
+  const response = await axios(`${BASE_URL}?${searchParams}`).then(data => {
+    console.log(data.data.hits);
+    return data.data.hits;
+  });
 
   return response;
 };

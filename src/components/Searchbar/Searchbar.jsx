@@ -7,14 +7,13 @@ const INITIAL_VALUES = {
 };
 
 export class Searchbar extends Component {
-  handleSubmit = ({ query }, { resetForm }) => {
+  handleSubmit = ({ query }) => {
     if (query.trim() === '') {
       return toast.error('Enter Query', {
         theme: 'colored',
       });
     }
     this.props.onSubmit(query);
-    resetForm();
   };
 
   render() {
@@ -30,7 +29,7 @@ export class Searchbar extends Component {
               type="text"
               name="query"
               autoFocus
-              placeholder="Search images and photos"
+              placeholder="Search images and payload"
             />
           </Form>
         </Formik>

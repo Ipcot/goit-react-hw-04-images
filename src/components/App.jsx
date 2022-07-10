@@ -6,58 +6,97 @@ import { LoadMoreButton } from './LoadMoreButton';
 import { ImageGallery } from './ImageGallery';
 import { fetchQuery } from 'Services/Services';
 import { Loader } from './Loader';
+import { mapper } from 'utils/mapper';
+import { Modal } from './Modal';
+// import { ImageGalleryItem } from './ImageGalleryItem';
 
 export class App extends Component {
   state = {
     page: 1,
     query: '',
-    photos: null,
+    payload: [],
     isLoading: false,
+    largeImg: '',
   };
 
-  onSubmit = query => {
-    this.setState({ query, page: 1, photos: null });
-  };
-
-  onLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
   componentDidUpdate = (prevProps, prevState) => {
     if (
-      prevState.query !== this.state.query ||
+      // prevState.query !== this.state.query ||
       prevState.page !== this.state.page
     ) {
-      this.setState({ isLoading: true });
-      fetchQuery(this.state.query, this.state.page).then(data => {
-        if (data.length === 0) {
-          console.log('error');
-          return this.setState({ isLoading: false });
-        }
-        if (prevState.photos === null) {
-          return this.setState({ photos: data, isLoading: false });
-        }
-        this.setState(prevState => ({
-          photos: [...prevState.photos, ...data],
-          isLoading: false,
-        }));
-      });
+      this.getImages(this.state.query, this.state.page);
+
+      // this.setState({ isLoading: true });
+      // fetchQuery(this.state.query, this.state.page).then(data => {
+      //   if (data.length === 0) {
+      //     this.setState({ isLoading: false });
+      //     return toast.error(`No image on ${this.state.query} query`, {
+      //       theme: 'colored',
+      //     });
+      //   }
+      //   this.setState(prevState => ({
+      //     payload: [...prevState.payload, ...data],
+      //     isLoading: false,
+      //   }));
+      // });
+    }
+    if (prevState.query !== this.state.query) {
+      this.getImages(this.state.query, this.state.page);
     }
   };
 
+  getImages = (query, page) => {
+    this.setState({ isLoading: true });
+    fetchQuery(query, page)
+      .then(data => {
+        this.setState({ payload: [...this.state.payload, ...mapper(data)] });
+      })
+      .finally(() => this.setState({ isLoading: false }));
+  };
+
+  onSubmit = query => {
+    // this.getImages(this.state.query, this.state.page);
+    this.setState({ query, page: 1, payload: [] });
+  };
+
+  onLoadMore = () => {
+    this.setState(({ page }) => ({
+      page: page + 1,
+    }));
+  };
+
+  onOpenModal = largeImg => {
+    console.log(largeImg);
+    this.setState({ largeImg: largeImg });
+  };
+
+  onCloseModal = () => {
+    this.setState({ largeImg: '' });
+  };
+
   render() {
+    // console.log(this.props);
     return (
       <div>
         <Searchbar onSubmit={this.onSubmit} />
         {this.state.isLoading ? (
           <Loader />
         ) : (
-          <ImageGallery query={this.state.query} photos={this.state.photos} />
+          <ImageGallery
+            // query={this.state.query}
+            payload={this.state.payload}
+            onOpenModal={this.onOpenModal}
+          />
         )}
 
-        {this.state.photos && (
+        {this.state.payload.length > 0 && (
           <LoadMoreButton onClick={this.onLoadMore}>Load more</LoadMoreButton>
+        )}
+        {this.state.largeImg !== '' && (
+          <Modal
+            largeImg={this.state.largeImg}
+            onCloseModal={this.onCloseModal}
+          />
         )}
         <ToastContainer
           position="top-center"

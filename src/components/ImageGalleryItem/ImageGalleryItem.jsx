@@ -1,14 +1,13 @@
-export const ImageGalleryItem = ({ photos }) => {
+export const ImageGalleryItem = ({ smallImg, largeImg, onOpenModal }) => {
   return (
     <>
-      {photos &&
-        photos.map(item => {
-          return (
-            <li key={item.id}>
-              <img src={item.webformatURL} alt="collection" />
-            </li>
-          );
-        })}
+      <li
+        onClick={() => {
+          onOpenModal(largeImg);
+        }}
+      >
+        <img src={smallImg} alt="collection" />
+      </li>
     </>
   );
 };
