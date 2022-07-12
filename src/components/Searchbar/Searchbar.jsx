@@ -1,39 +1,53 @@
-import { Formik, Form, Field } from 'formik';
+import PropTypes from 'prop-types';
 import { Component } from 'react';
+import { Formik } from 'formik';
 import { toast } from 'react-toastify';
+import { MdSearch } from 'react-icons/md';
+import {
+  SearchHeader,
+  FormStyled,
+  SearchFormButton,
+  SearchFormInput,
+} from './Searchbar.styled';
 
 const INITIAL_VALUES = {
   query: '',
 };
 
 export class Searchbar extends Component {
+  
+  static propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+  };
+
   handleSubmit = ({ query }) => {
+    const { onSubmit } = this.props;
     if (query.trim() === '') {
       return toast.error('Enter Query', {
         theme: 'colored',
       });
     }
-    this.props.onSubmit(query);
+    onSubmit(query);
   };
 
   render() {
     return (
-      <header>
+      <SearchHeader>
         <Formik initialValues={INITIAL_VALUES} onSubmit={this.handleSubmit}>
-          <Form autoComplete="off">
-            <button type="submit">
-              <span>Search</span>
-            </button>
+          <FormStyled autoComplete="off">
+            <SearchFormButton type="submit">
+              <MdSearch />
+            </SearchFormButton>
 
-            <Field
+            <SearchFormInput
               type="text"
               name="query"
               autoFocus
-              placeholder="Search images and payload"
+              placeholder="Search images and photo"
             />
-          </Form>
+          </FormStyled>
         </Formik>
-      </header>
+      </SearchHeader>
     );
   }
 }

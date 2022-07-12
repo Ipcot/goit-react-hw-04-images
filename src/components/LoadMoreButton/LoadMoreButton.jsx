@@ -1,7 +1,14 @@
+import PropTypes from 'prop-types';
+import { LoadMoreButtonStyled } from './LoadMoreButton.styled';
+
 export const LoadMoreButton = ({ onClick }) => {
   return (
-    <button type="button" onClick={onClick}>
+    <LoadMoreButtonStyled type="button" onClick={onClick}>
       Load more
-    </button>
+    </LoadMoreButtonStyled>
   );
 };
+
+LoadMoreButton.propTypes = {
+  onClock: PropTypes.func,
+}

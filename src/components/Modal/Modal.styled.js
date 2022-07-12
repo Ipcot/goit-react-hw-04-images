@@ -14,6 +14,14 @@ export const Backdrop = styled.div`
 `;
 
 export const ModalStyled = styled.div`
-  max-width: calc(100vw - 48px);
-  max-height: calc(100vh - 24px);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: auto;
+`;
+
+export const ModalImg = styled.img`
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
 `;

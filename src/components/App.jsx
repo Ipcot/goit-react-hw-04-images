@@ -1,5 +1,7 @@
 import { Component } from 'react';
-import { ToastContainer } from 'react-toastify';
+import { GlobalStyle } from './GlobalStyle';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { Searchbar } from './Searchbar';
 import { LoadMoreButton } from './LoadMoreButton';
@@ -8,7 +10,7 @@ import { fetchQuery } from 'Services/Services';
 import { Loader } from './Loader';
 import { mapper } from 'utils/mapper';
 import { Modal } from './Modal';
-// import { ImageGalleryItem } from './ImageGalleryItem';
+import { CustomToast } from './CustomToast';
 
 export class App extends Component {
   state = {
@@ -19,28 +21,11 @@ export class App extends Component {
     largeImg: '',
   };
 
-  componentDidUpdate = (prevProps, prevState) => {
+  componentDidUpdate = (_, prevState) => {
     if (
-      // prevState.query !== this.state.query ||
+      prevState.query !== this.state.query ||
       prevState.page !== this.state.page
     ) {
-      this.getImages(this.state.query, this.state.page);
-
-      // this.setState({ isLoading: true });
-      // fetchQuery(this.state.query, this.state.page).then(data => {
-      //   if (data.length === 0) {
-      //     this.setState({ isLoading: false });
-      //     return toast.error(`No image on ${this.state.query} query`, {
-      //       theme: 'colored',
-      //     });
-      //   }
-      //   this.setState(prevState => ({
-      //     payload: [...prevState.payload, ...data],
-      //     isLoading: false,
-      //   }));
-      // });
-    }
-    if (prevState.query !== this.state.query) {
       this.getImages(this.state.query, this.state.page);
     }
   };
@@ -51,11 +36,18 @@ export class App extends Component {
       .then(data => {
         this.setState({ payload: [...this.state.payload, ...mapper(data)] });
       })
+      .catch(error =>
+        toast.error(error.message, {
+          theme: 'colored',
+        })
+      )
       .finally(() => this.setState({ isLoading: false }));
   };
 
   onSubmit = query => {
-    // this.getImages(this.state.query, this.state.page);
+    if (query === this.state.query) {
+      return;
+    }
     this.setState({ query, page: 1, payload: [] });
   };
 
@@ -66,50 +58,66 @@ export class App extends Component {
   };
 
   onOpenModal = largeImg => {
-    console.log(largeImg);
     this.setState({ largeImg: largeImg });
   };
 
-  onCloseModal = () => {
-    this.setState({ largeImg: '' });
+  onCloseModal = e => {
+    if (e.target === e.currentTarget || e.code === 'Escape') {
+      this.setState({ largeImg: '' });
+    }
   };
 
   render() {
-    // console.log(this.props);
+    // const customId = 'custom-id-yes';
+    const { isLoading, payload, query, largeImg } = this.state;
     return (
-      <div>
-        <Searchbar onSubmit={this.onSubmit} />
-        {this.state.isLoading ? (
-          <Loader />
-        ) : (
-          <ImageGallery
-            // query={this.state.query}
-            payload={this.state.payload}
-            onOpenModal={this.onOpenModal}
-          />
-        )}
+      <>
+        <GlobalStyle />
+        <div>
+          <Searchbar onSubmit={this.onSubmit} />
+          {isLoading && <Loader />}
+          {payload.length === 0 && query !== '' && isLoading === false && (
+            <CustomToast />
+          )}
 
-        {this.state.payload.length > 0 && (
-          <LoadMoreButton onClick={this.onLoadMore}>Load more</LoadMoreButton>
-        )}
-        {this.state.largeImg !== '' && (
-          <Modal
-            largeImg={this.state.largeImg}
-            onCloseModal={this.onCloseModal}
+          {/* {this.state.payload.length === 0 &&
+            this.state.query !== '' &&
+            this.state.isLoading === false &&
+            toast.error(`No image on ${this.state.query} query`, {
+              theme: 'colored',
+              toastId: customId,
+            })} */}
+          {payload.length > 0 && (
+            <ImageGallery
+              query={query}
+              payload={payload}
+              onOpenModal={this.onOpenModal}
+            />
+          )}
+
+          {payload.length > 0 && (
+            <LoadMoreButton onClick={this.onLoadMore}>Load more</LoadMoreButton>
+          )}
+          {largeImg !== '' && (
+            <Modal
+              largeImg={largeImg}
+              onCloseModal={this.onCloseModal}
+              query={query}
+            />
+          )}
+          <ToastContainer
+            position="top-center"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
           />
-        )}
-        <ToastContainer
-          position="top-center"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-      </div>
+        </div>
+      </>
     );
   }
 }
