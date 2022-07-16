@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { GlobalStyle } from './GlobalStyle';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
@@ -12,112 +12,97 @@ import { mapper } from 'utils/mapper';
 import { Modal } from './Modal';
 import { CustomToast } from './CustomToast';
 
-export class App extends Component {
-  state = {
-    page: 1,
-    query: '',
-    payload: [],
-    isLoading: false,
-    largeImg: '',
-  };
+export const App = () => {
+  const [page, setPage] = useState(1);
+  const [queryState, setQueryState] = useState('');
+  const [payloadState, setPayloadState] = useState([]);
+  const [isLoadingState, setIsLoadingState] = useState(false);
+  const [largeImgState, setLargeImgState] = useState('');
 
-  componentDidUpdate = (_, prevState) => {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.getImages(this.state.query, this.state.page);
-    }
-  };
-
-  getImages = (query, page) => {
-    this.setState({ isLoading: true });
-    fetchQuery(query, page)
-      .then(data => {
-        this.setState({ payload: [...this.state.payload, ...mapper(data)] });
-      })
-      .catch(error =>
-        toast.error(error.message, {
-          theme: 'colored',
-        })
-      )
-      .finally(() => this.setState({ isLoading: false }));
-  };
-
-  onSubmit = query => {
-    if (query === this.state.query) {
+  useEffect(() => {
+    if (queryState === '') {
       return;
     }
-    this.setState({ query, page: 1, payload: [] });
+    const getImages = (query, page) => {
+      setIsLoadingState(true);
+      fetchQuery(query, page)
+        .then(data => {
+          setPayloadState(state => [...state, ...mapper(data)]);
+        })
+        .catch(error =>
+          toast.error(error.message, {
+            theme: 'colored',
+          })
+        )
+        .finally(() => setIsLoadingState(false));
+    };
+
+    getImages(queryState, page);
+  }, [queryState, page]);
+
+  const onSubmit = query => {
+    if (query === queryState) {
+      return;
+    }
+    setQueryState(query);
+    setPage(1);
+    setPayloadState([]);
   };
 
-  onLoadMore = () => {
-    this.setState(({ page }) => ({
-      page: page + 1,
-    }));
+  const onLoadMore = () => {
+    setPage(state => state + 1);
   };
 
-  onOpenModal = largeImg => {
-    this.setState({ largeImg: largeImg });
+  const onOpenModal = largeImg => {
+    setLargeImgState(largeImg);
   };
 
-  onCloseModal = e => {
+  const onCloseModal = e => {
     if (e.target === e.currentTarget || e.code === 'Escape') {
-      this.setState({ largeImg: '' });
+      setLargeImgState('');
     }
   };
 
-  render() {
-    // const customId = 'custom-id-yes';
-    const { isLoading, payload, query, largeImg } = this.state;
-    return (
-      <>
-        <GlobalStyle />
-        <div>
-          <Searchbar onSubmit={this.onSubmit} />
-          {isLoading && <Loader />}
-          {payload.length === 0 && query !== '' && isLoading === false && (
-            <CustomToast />
-          )}
+  return (
+    <>
+      <GlobalStyle />
+      <div>
+        <Searchbar onSubmit={onSubmit} />
+        {isLoadingState && <Loader />}
+        {payloadState.length === 0 &&
+          queryState !== '' &&
+          isLoadingState === false && <CustomToast />}
 
-          {/* {this.state.payload.length === 0 &&
-            this.state.query !== '' &&
-            this.state.isLoading === false &&
-            toast.error(`No image on ${this.state.query} query`, {
-              theme: 'colored',
-              toastId: customId,
-            })} */}
-          {payload.length > 0 && (
-            <ImageGallery
-              query={query}
-              payload={payload}
-              onOpenModal={this.onOpenModal}
-            />
-          )}
-
-          {payload.length > 0 && (
-            <LoadMoreButton onClick={this.onLoadMore}>Load more</LoadMoreButton>
-          )}
-          {largeImg !== '' && (
-            <Modal
-              largeImg={largeImg}
-              onCloseModal={this.onCloseModal}
-              query={query}
-            />
-          )}
-          <ToastContainer
-            position="top-center"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
+        {payloadState.length > 0 && (
+          <ImageGallery
+            query={queryState}
+            payload={payloadState}
+            onOpenModal={onOpenModal}
           />
-        </div>
-      </>
-    );
-  }
-}
+        )}
+
+        {payloadState.length > 0 && (
+          <LoadMoreButton onClick={onLoadMore}>Load more</LoadMoreButton>
+        )}
+        {largeImgState !== '' && (
+          <Modal
+            largeImg={largeImgState}
+            onCloseModal={onCloseModal}
+            query={queryState}
+          />
+        )}
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </div>
+    </>
+  );
+};
