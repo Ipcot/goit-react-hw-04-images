@@ -16,6 +16,5 @@ export const fetchQuery = async (query, page) => {
   const response = await axios(`${BASE_URL}?${searchParams}`).then(data => {
     return data.data.hits;
   });
-
   return response;
 };
